@@ -41,16 +41,16 @@ public class DelayedQueueTest {
     @Test
     public void testCode() throws Exception {
         // Enqueue the job before worker is created and started
-        final List<Job> jobs = new ArrayList<Job>(10);
+        final List<DelayedJob> jobs = new ArrayList<DelayedJob>(10);
         for (int i = 0; i < 10; i++) {
-            jobs.add(new Job("TestAction", new Object[] { i, 2.3, true, "test", Arrays.asList("inner", 4.5) }));
+            jobs.add(new DelayedJob("TestAction", delayTestQueue, new Object[] { i, 2.3, true, "test", Arrays.asList("inner", 4.5) }));
         }
         TestUtils.delayEnqueueJobs(delayTestQueue, jobs, config);
         jobs.clear();
         for (int i = 10; i < 20; i++) {
-            jobs.add(new Job("TestAction", new Object[] { i, 2.3, true, "test", Arrays.asList("inner", 4.5) }));
+            jobs.add(new DelayedJob("TestAction", delayTestQueue, new Object[] { i, 2.3, true, "test", Arrays.asList("inner", 4.5) }));
         }
-        TestUtils.enqueueJobs(testQueue, jobs, config);
+        //TestUtils.enqueueJobs(testQueue, jobs, config);
 
         Jedis jedis = createJedis(config);
         try { // Assert that we enqueued the job

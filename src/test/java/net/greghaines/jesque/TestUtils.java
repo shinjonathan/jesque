@@ -94,13 +94,13 @@ public final class TestUtils {
         }
     }
 
-    public static void delayEnqueueJobs(final String queue, final List<Job> jobs, final Config config) {
+    public static void delayEnqueueJobs(final String queue, final List<DelayedJob> jobs, final Config config) {
         final Client client = new ClientImpl(config);
         try {
             int i = 1;
-            for (final Job job : jobs) {
+            for (final DelayedJob job : jobs) {
                 final long value = System.currentTimeMillis() + (500 * i++);
-                client.delayedEnqueue(queue, job, value);
+                client.delayedEnqueueForScheduler(queue, job, value);
             }
         } finally {
             client.end();

@@ -20,6 +20,7 @@ import static net.greghaines.jesque.utils.VersionUtils.ERROR;
 
 import java.text.DateFormat;
 
+import net.greghaines.jesque.DelayedJob;
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.JobFailure;
 import net.greghaines.jesque.WorkerStatus;
@@ -47,7 +48,9 @@ public final class ObjectMapperFactory {
 			.addSerializer(JobFailure.class, new JobFailureJsonSerializer())
 			.addDeserializer(JobFailure.class, new JobFailureJsonDeserializer())
 			.addSerializer(WorkerStatus.class, new WorkerStatusJsonSerializer())
-			.addDeserializer(WorkerStatus.class, new WorkerStatusJsonDeserializer()));
+			.addDeserializer(WorkerStatus.class, new WorkerStatusJsonDeserializer())
+			.addSerializer(DelayedJob.class, new DelayedJobJsonSerializer())
+			.addDeserializer(DelayedJob.class, new DelayedJobJsonDeserializer()));
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		final DateFormat jsonDateFormat = new CompositeDateFormat();
 		mapper.getDeserializationConfig().with(jsonDateFormat);

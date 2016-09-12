@@ -92,4 +92,14 @@ public class ClientPoolImpl extends AbstractClient {
             }
         });
     }
+
+    @Override
+    protected void doDelayedEnqueueForScheduler(final String queue, final String msg, final long future) throws Exception {
+        PoolUtils.doWorkInPool(this.jedisPool, new PoolWork<Jedis, Void>() {
+            public Void doWork(final Jedis jedis) {
+                doDelayedEnqueueForScheduler(jedis, getNamespace(), queue, msg, future);
+                return null;
+            }
+        });
+    }
 }

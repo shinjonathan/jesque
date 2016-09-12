@@ -18,6 +18,7 @@ package net.greghaines.jesque.client;
 import static net.greghaines.jesque.utils.ResqueConstants.QUEUE;
 import static net.greghaines.jesque.utils.ResqueConstants.QUEUES;
 import net.greghaines.jesque.Config;
+import net.greghaines.jesque.DelayedJob;
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.json.ObjectMapperFactory;
 import net.greghaines.jesque.utils.JedisUtils;
@@ -262,12 +263,42 @@ public abstract class AbstractClient implements Client {
         }
     }
 
+    public static void doDelayedEnqueueForScheduler(final Jedis jedis, final String namespace, final String queue, final String jobJson, final long future) {
+        // Add task only if this queue is either delayed or unused
+        final String timeToRun = String.valueOf(future).substring(0,10);
+        final String delayedQueueScheduleKey = JesqueUtils.createKey(namespace, "delayed_queue_schedule");
+        final String jobTimestampKey = JesqueUtils.createKey(namespace, "timestamp", jobJson);
+        final String delayKey = JesqueUtils.createKey(namespace, "delayed", timeToRun);
+
+        if (JedisUtils.isDelayedQueue(jedis, delayedQueueScheduleKey) || !JedisUtils.isKeyUsed(jedis, delayedQueueScheduleKey)) {
+
+            jedis.rpush(delayKey, jobJson);
+            jedis.sadd(jobTimestampKey, "delayed:" + timeToRun);
+            jedis.zadd(delayedQueueScheduleKey, Integer.valueOf(timeToRun), timeToRun);
+        } else {
+            throw new IllegalArgumentException(queue + " is not a delayed queue");
+        }
+    }
+
     protected abstract void doDelayedEnqueue(String queue, String msg, long future) throws Exception;
+
+    protected abstract void doDelayedEnqueueForScheduler(String queue, String msg, long future) throws Exception;
 
     public void delayedEnqueue(final String queue, final Job job, final long future) {
         validateArguments(queue, job, future);
         try {
             doDelayedEnqueue(queue, ObjectMapperFactory.get().writeValueAsString(job), future);
+        } catch (RuntimeException re) {
+            throw re;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void delayedEnqueueForScheduler(final String queue, final DelayedJob job, final long future) {
+        validateArguments(queue, job, future);
+        try {
+            doDelayedEnqueueForScheduler(queue, ObjectMapperFactory.get().writeValueAsString(job), future);
         } catch (RuntimeException re) {
             throw re;
         } catch (Exception e) {
@@ -287,7 +318,23 @@ public abstract class AbstractClient implements Client {
         }
     }
 
+    private static void validateArguments(final String queue, final DelayedJob job) {
+        if (queue == null || "".equals(queue)) {
+            throw new IllegalArgumentException("queue must not be null or empty: " + queue);
+        }
+        if (job == null) {
+            throw new IllegalArgumentException("job must not be null");
+        }
+    }
+
     private static void validateArguments(final String queue, final Job job, final long future) {
+        validateArguments(queue, job);
+        if (System.currentTimeMillis() > future) {
+            throw new IllegalArgumentException("future must be after current time");
+        }
+    }
+
+    private static void validateArguments(final String queue, final DelayedJob job, final long future) {
         validateArguments(queue, job);
         if (System.currentTimeMillis() > future) {
             throw new IllegalArgumentException("future must be after current time");

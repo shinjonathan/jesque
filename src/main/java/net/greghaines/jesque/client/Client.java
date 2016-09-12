@@ -15,6 +15,7 @@
  */
 package net.greghaines.jesque.client;
 
+import net.greghaines.jesque.DelayedJob;
 import net.greghaines.jesque.Job;
 
 /**
@@ -82,4 +83,6 @@ public interface Client {
      *             timestamp is not in the future
      */
     void delayedEnqueue(String queue, Job job, long future);
+
+    void delayedEnqueueForScheduler(String queue, DelayedJob job, long future);
 }
