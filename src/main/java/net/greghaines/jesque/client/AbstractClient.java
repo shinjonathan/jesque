@@ -264,14 +264,13 @@ public abstract class AbstractClient implements Client {
     }
 
     public static void doDelayedEnqueueForScheduler(final Jedis jedis, final String namespace, final String queue, final String jobJson, final long future) {
-        // Add task only if this queue is either delayed or unused
         final String timeToRun = String.valueOf(future).substring(0,10);
+
         final String delayedQueueScheduleKey = JesqueUtils.createKey(namespace, "delayed_queue_schedule");
         final String jobTimestampKey = JesqueUtils.createKey(namespace, "timestamp", jobJson);
         final String delayKey = JesqueUtils.createKey(namespace, "delayed", timeToRun);
 
         if (JedisUtils.isDelayedQueue(jedis, delayedQueueScheduleKey) || !JedisUtils.isKeyUsed(jedis, delayedQueueScheduleKey)) {
-
             jedis.rpush(delayKey, jobJson);
             jedis.sadd(jobTimestampKey, "delayed:" + timeToRun);
             jedis.zadd(delayedQueueScheduleKey, Integer.valueOf(timeToRun), timeToRun);
