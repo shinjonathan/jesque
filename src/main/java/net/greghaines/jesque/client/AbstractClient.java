@@ -23,6 +23,7 @@ import net.greghaines.jesque.Job;
 import net.greghaines.jesque.json.ObjectMapperFactory;
 import net.greghaines.jesque.utils.JedisUtils;
 import net.greghaines.jesque.utils.JesqueUtils;
+import net.greghaines.jesque.utils.ResqueConstants;
 import redis.clients.jedis.Jedis;
 
 /**
@@ -268,11 +269,11 @@ public abstract class AbstractClient implements Client {
 
         final String delayedQueueScheduleKey = JesqueUtils.createKey(namespace, "delayed_queue_schedule");
         final String jobTimestampKey = JesqueUtils.createKey(namespace, "timestamps", jobJson);
-        final String delayKey = JesqueUtils.createKey(namespace, "delayed", String.valueOf(timeToRun));
+        final String delayValue = JesqueUtils.join(ResqueConstants.COLON, "delayed", String.valueOf(timeToRun));
 
         if (JedisUtils.isDelayedQueue(jedis, delayedQueueScheduleKey) || !JedisUtils.isKeyUsed(jedis, delayedQueueScheduleKey)) {
-            jedis.rpush(delayKey, jobJson);
-            jedis.sadd(jobTimestampKey, JesqueUtils.delayValue(timeToRun));
+            jedis.rpush(JesqueUtils.createKey(namespace, delayValue), jobJson);
+            jedis.sadd(jobTimestampKey, delayValue);
             jedis.zadd(delayedQueueScheduleKey, timeToRun, String.valueOf(timeToRun));
         } else {
             throw new IllegalArgumentException(queue + " is not a delayed queue");

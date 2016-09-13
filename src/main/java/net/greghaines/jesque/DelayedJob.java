@@ -11,9 +11,9 @@ public class DelayedJob implements Serializable {
 
     private static final long serialVersionUID = -3470256227126193858L;
 
+    private String queue;
     private String className;
     private Object[] args;
-    private String queue;
 
     /**
      * No-arg constructor.
@@ -34,8 +34,8 @@ public class DelayedJob implements Serializable {
         if (origJob == null) {
             throw new IllegalArgumentException("origJob must not be null");
         }
-        this.className = origJob.className;
         this.queue = origJob.queue;
+        this.className = origJob.className;
         this.args = (origJob.args == null) ? null : origJob.args.clone();
 
     }
@@ -49,8 +49,8 @@ public class DelayedJob implements Serializable {
      * @param args
      *            the arguments for the Job
      */
-    public DelayedJob(final String className, final String queue, final List<?> args) {
-        this(className, queue, args.toArray());
+    public DelayedJob(final String queue, final String className, final List<?> args) {
+        this(queue, className, args.toArray());
     }
 
     /**
@@ -61,14 +61,27 @@ public class DelayedJob implements Serializable {
      * @param args
      *            the arguments for the Job
      */
-    public DelayedJob(final String className, final String queue, final Object... args) {
-        if (className == null || "".equals(className)) {
-            throw new IllegalArgumentException("className must not be null or empty: " + className);
+    public DelayedJob(final String queue, final String className, final Object... args) {
+        if ((queue == null || "".equals(queue)) && (className == null || "".equals(className))) {
+            throw new IllegalArgumentException("className and queue must not be null or empty: " + className);
         }
+        this.queue = queue;
         this.className = className;
         this.args = args;
-        this.queue = queue;
     }
+
+    /**
+     *
+     * @return name of target queue
+     */
+    public String getQueue() { return this.queue; }
+
+    /**
+     * Sets target queue name
+     *
+     * @param queue queue name
+     */
+    public void setQueue(final String queue) { this.queue = queue; }
 
     /**
      * @return the name of the Job's class
@@ -87,18 +100,6 @@ public class DelayedJob implements Serializable {
         this.className = className;
     }
 
-    /**
-     *
-     * @return name of target queue
-     */
-    public String getQueue() { return this.queue; }
-
-    /**
-     * Sets target queue name
-     *
-     * @param queue queue name
-     */
-    public void setQueue(final String queue) { this.queue = queue; }
     /**
      * @return the arguments for the job
      */
@@ -119,7 +120,7 @@ public class DelayedJob implements Serializable {
 
     @Override
     public String toString() {
-        return "<Job className=" + this.className + " queue=" + this.queue + " args=" + Arrays.toString(this.args) + ">";
+        return "<Job queue=" + this.queue +" className=" + this.className + " args=" + Arrays.toString(this.args) + ">";
     }
 
     @Override
@@ -148,7 +149,7 @@ public class DelayedJob implements Serializable {
             if (other.className != null) {
                 return false;
             }
-        } else if (!this.className.equals(other.className) || !this.queue.equals(other.queue) || !Arrays.equals(this.args, other.args)) {
+        } else if (!this.queue.equals(other.queue) || !this.className.equals(other.className) || !Arrays.equals(this.args, other.args)) {
             return false;
         }
         return true;
