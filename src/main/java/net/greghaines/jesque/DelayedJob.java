@@ -87,8 +87,17 @@ public class DelayedJob implements Serializable {
         this.className = className;
     }
 
+    /**
+     *
+     * @return name of target queue
+     */
     public String getQueue() { return this.queue; }
 
+    /**
+     * Sets target queue name
+     *
+     * @param queue queue name
+     */
     public void setQueue(final String queue) { this.queue = queue; }
     /**
      * @return the arguments for the job
@@ -107,13 +116,6 @@ public class DelayedJob implements Serializable {
         this.args = args;
     }
 
-
-//    /**
-//     * @return true if this Job has a valid class name and arguments
-//     */
-//    public boolean isValid() {
-//        return (this.args != null && this.queue != null && !"".equals(queue) && this.className != null && !"".equals(this.className));
-//    }
 
     @Override
     public String toString() {
