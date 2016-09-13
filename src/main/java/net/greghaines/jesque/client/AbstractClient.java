@@ -272,7 +272,7 @@ public abstract class AbstractClient implements Client {
 
         if (JedisUtils.isDelayedQueue(jedis, delayedQueueScheduleKey) || !JedisUtils.isKeyUsed(jedis, delayedQueueScheduleKey)) {
             jedis.rpush(delayKey, jobJson);
-            jedis.sadd(jobTimestampKey, JesqueUtils.createKey("delayed", String.valueOf(timeToRun)));
+            jedis.sadd(jobTimestampKey, JesqueUtils.delayValue(timeToRun));
             jedis.zadd(delayedQueueScheduleKey, timeToRun, String.valueOf(timeToRun));
         } else {
             throw new IllegalArgumentException(queue + " is not a delayed queue");

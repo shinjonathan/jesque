@@ -113,6 +113,20 @@ public final class JesqueUtils {
     }
 
     /**
+     * Builds a delay value
+     *
+     * @param timeToRun
+     *            timestamp to add
+     * @return an assembled String key
+     */
+    public static String delayValue(int timeToRun) {
+        final List<String> list = new LinkedList<String>();
+        list.add("delayed");
+        list.add(String.valueOf(timeToRun));
+        return join(COLON, list);
+    }
+
+    /**
      * Creates a Resque backtrace from a Throwable's stack trace. Includes
      * causes.
      * 
