@@ -267,12 +267,12 @@ public abstract class AbstractClient implements Client {
         int timeToRun = (int) (future/1000);
 
         final String delayedQueueScheduleKey = JesqueUtils.createKey(namespace, "delayed_queue_schedule");
-        final String jobTimestampKey = JesqueUtils.createKey(namespace, "timestamp", jobJson);
+        final String jobTimestampKey = JesqueUtils.createKey(namespace, "timestamps", jobJson);
         final String delayKey = JesqueUtils.createKey(namespace, "delayed", String.valueOf(timeToRun));
 
         if (JedisUtils.isDelayedQueue(jedis, delayedQueueScheduleKey) || !JedisUtils.isKeyUsed(jedis, delayedQueueScheduleKey)) {
             jedis.rpush(delayKey, jobJson);
-            jedis.sadd(jobTimestampKey, "delayed:" + timeToRun);
+            jedis.sadd(jobTimestampKey, JesqueUtils.createKey("delayed", String.valueOf(timeToRun)));
             jedis.zadd(delayedQueueScheduleKey, timeToRun, String.valueOf(timeToRun));
         } else {
             throw new IllegalArgumentException(queue + " is not a delayed queue");
