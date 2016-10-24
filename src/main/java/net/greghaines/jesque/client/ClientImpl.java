@@ -112,8 +112,8 @@ public class ClientImpl extends AbstractClient {
                 try {Thread.sleep(500);} catch (Exception ex) {}
                 jedis.connect();
             }
-            // Try 10 times before failing
-        } while (++i < 10);
+            // Try 5 times before failing
+        } while (++i < 5);
     }
 
     @Override
@@ -129,8 +129,8 @@ public class ClientImpl extends AbstractClient {
                 try {Thread.sleep(500);} catch (Exception ex) {}
                 jedis.connect();
             }
-            // Try 10 times before failing
-        } while (++i < 10);
+            // Try 5 times before failing
+        } while (++i < 5);
     }
 
     @Override
@@ -159,8 +159,8 @@ public class ClientImpl extends AbstractClient {
                 try {Thread.sleep(500);} catch (Exception ex) {}
                 jedis.connect();
             }
-        // Try 10 times before failing
-        } while (++i < 10);
+        // Try 5 times before failing
+        } while (++i < 5);
 
     }
 
@@ -176,8 +176,8 @@ public class ClientImpl extends AbstractClient {
                 try {Thread.sleep(500);} catch (Exception ex) {}
                 jedis.connect();
             }
-        // Try 10 times before failing
-        } while (++i < 10);
+        // Try 5 times before failing
+        } while (++i < 5);
     }
 
     private void authenticateAndSelectDB() {
