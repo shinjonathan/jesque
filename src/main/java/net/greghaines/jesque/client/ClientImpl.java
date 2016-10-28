@@ -101,38 +101,14 @@ public class ClientImpl extends AbstractClient {
 
     @Override
     protected void doEnqueue(final String queue, final String jobJson) {
-        int i = 0;
-        do {
-            try {
-                ensureJedisConnection();
-                doEnqueue(this.jedis, getNamespace(), queue, jobJson);
-                break;
-            } catch (JedisConnectionException e) {
-                jedis.disconnect();
-                // Sleep for 5 seconds before attempting to reconnect
-                try {Thread.sleep(500);} catch (Exception ex) {}
-                jedis.connect();
-            }
-            // Try 5 times before failing
-        } while (++i < 5);
+        ensureJedisConnection();
+        doEnqueue(this.jedis, getNamespace(), queue, jobJson);
     }
 
     @Override
     protected void doPriorityEnqueue(final String queue, final String jobJson) {
-        int i = 0;
-        do {
-            try {
-                ensureJedisConnection();
-                doPriorityEnqueue(this.jedis, getNamespace(), queue, jobJson);
-                break;
-            } catch (JedisConnectionException e) {
-                jedis.disconnect();
-                // Sleep for 5 seconds before attempting to reconnect
-                try {Thread.sleep(500);} catch (Exception ex) {}
-                jedis.connect();
-            }
-            // Try 5 times before failing
-        } while (++i < 5);
+        ensureJedisConnection();
+        doPriorityEnqueue(this.jedis, getNamespace(), queue, jobJson);
     }
 
     @Override
@@ -150,38 +126,13 @@ public class ClientImpl extends AbstractClient {
 
     @Override
     protected void doDelayedEnqueue(final String queue, final String msg, final long future) throws Exception {
-        int i = 0;
-        do {
-            try {
-                ensureJedisConnection();
-                doDelayedEnqueue(this.jedis, getNamespace(), queue, msg, future);
-                break;
-            } catch (JedisConnectionException e) {
-                jedis.disconnect();
-                // Sleep for 5 seconds before attempting to reconnect
-                try {Thread.sleep(500);} catch (Exception ex) {}
-                jedis.connect();
-            }
-        // Try 5 times before failing
-        } while (++i < 5);
-
+        ensureJedisConnection();
+        doDelayedEnqueue(this.jedis, getNamespace(), queue, msg, future);
     }
 
     protected void doDelayedEnqueueForScheduler(final String queue, final String msg, final long future) throws Exception {
-        int i = 0;
-        do {
-            try {
-                ensureJedisConnection();
-                doDelayedEnqueueForScheduler(this.jedis, getNamespace(), queue, msg, future);
-                break;
-            } catch (JedisConnectionException e) {
-                jedis.disconnect();
-                // Sleep for 5 seconds before attempting to reconnect
-                try {Thread.sleep(500);} catch (Exception ex) {}
-                jedis.connect();
-            }
-        // Try 5 times before failing
-        } while (++i < 5);
+        ensureJedisConnection();
+        doDelayedEnqueueForScheduler(this.jedis, getNamespace(), queue, msg, future);
     }
 
     private void authenticateAndSelectDB() {
@@ -192,8 +143,16 @@ public class ClientImpl extends AbstractClient {
     }
 
     private void ensureJedisConnection() {
-        if (this.checkConnectionBeforeUse && !JedisUtils.ensureJedisConnection(this.jedis)) {
-            authenticateAndSelectDB();
+        try {
+            if (this.checkConnectionBeforeUse && !JedisUtils.ensureJedisConnection(this.jedis)) {
+                authenticateAndSelectDB();
+            }
+        } catch (JedisConnectionException e) {
+            if(!JedisUtils.reconnect(jedis, 5, 500)) {
+                throw new JedisConnectionException("Failed to reconnect", e);
+            } else {
+                authenticateAndSelectDB();
+            }
         }
     }
 }
