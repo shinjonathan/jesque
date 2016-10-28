@@ -106,6 +106,7 @@ public class ClientImpl extends AbstractClient {
             try {
                 ensureJedisConnection();
                 doEnqueue(this.jedis, getNamespace(), queue, jobJson);
+                break;
             } catch (JedisConnectionException e) {
                 jedis.disconnect();
                 // Sleep for 5 seconds before attempting to reconnect
@@ -123,6 +124,7 @@ public class ClientImpl extends AbstractClient {
             try {
                 ensureJedisConnection();
                 doPriorityEnqueue(this.jedis, getNamespace(), queue, jobJson);
+                break;
             } catch (JedisConnectionException e) {
                 jedis.disconnect();
                 // Sleep for 5 seconds before attempting to reconnect
@@ -153,6 +155,7 @@ public class ClientImpl extends AbstractClient {
             try {
                 ensureJedisConnection();
                 doDelayedEnqueue(this.jedis, getNamespace(), queue, msg, future);
+                break;
             } catch (JedisConnectionException e) {
                 jedis.disconnect();
                 // Sleep for 5 seconds before attempting to reconnect
@@ -170,6 +173,7 @@ public class ClientImpl extends AbstractClient {
             try {
                 ensureJedisConnection();
                 doDelayedEnqueueForScheduler(this.jedis, getNamespace(), queue, msg, future);
+                break;
             } catch (JedisConnectionException e) {
                 jedis.disconnect();
                 // Sleep for 5 seconds before attempting to reconnect
