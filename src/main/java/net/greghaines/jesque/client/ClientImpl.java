@@ -23,6 +23,7 @@ import net.greghaines.jesque.Config;
 import net.greghaines.jesque.utils.JedisUtils;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
  * Basic implementation of the Client interface.
@@ -142,8 +143,16 @@ public class ClientImpl extends AbstractClient {
     }
 
     private void ensureJedisConnection() {
-        if (this.checkConnectionBeforeUse && !JedisUtils.ensureJedisConnection(this.jedis)) {
-            authenticateAndSelectDB();
+        try {
+            if (this.checkConnectionBeforeUse && !JedisUtils.ensureJedisConnection(this.jedis)) {
+                authenticateAndSelectDB();
+            }
+        } catch (JedisConnectionException e) {
+            if(!JedisUtils.reconnect(jedis, 5, 500)) {
+                throw new JedisConnectionException("Failed to reconnect", e);
+            } else {
+                authenticateAndSelectDB();
+            }
         }
     }
 }
